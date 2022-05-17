@@ -1,13 +1,28 @@
 const express = require('express')
+
 const users = express.Router()
+
 const cors =require("cors")
+
 const jwt=require("jsonwebtoken")
+
 const bcrypt =require("bcrypt")
+
 const User = require("../models/User")
 
 users.use(cors())
 
 process.env.SECRET_KEY ='secret'
+
+const Joi = require("joi")
+
+const schema = Joi.object({
+    user_name:Joi.string().required(),
+    mobile_number:Joi.string().required(),
+    email_id:Joi.string().required(),
+    password:Joi.string().required(),
+    created:Joi.any().optional()
+})
 
 //register
 users.post('/register',(req,res)=>{
@@ -19,9 +34,13 @@ users.post('/register',(req,res)=>{
         password:req.body.password,
         created:today
          }
-    
-    User.findOne({
-        where:{
+         const {error} =schema.validate(userData)
+         if(error){
+             res.send(error)
+         }
+         else
+           User.findOne({
+             where:{
             email_id:req.body.email_id
          }
     })
@@ -50,6 +69,7 @@ users.post('/register',(req,res)=>{
     })
     
 })
+
 
 //login
 users.post('/login', async (req,res)=>{
