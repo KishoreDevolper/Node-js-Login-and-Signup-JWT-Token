@@ -52,27 +52,22 @@ users.post('/register',(req,res)=>{
 })
 
 //login
-users.post('/login',(req,res)=>{
-            User.findOne({where:{
-                email_id:req.body.email_id,
-            }})
-            .then(user=>{
-                
-                if(bcrypt.compareSync(req.body.password,user.password)){
-                     let token = jwt.sign(user.dataValues,process.env.SECRET_KEY,{
-                     expiresIn:2000
-                    })
-                    res.json({token:token})
-                    
-                }else{
-                    res.send("invalid password")
-                    
-                }
-            })
-            .catch(err=>{
-                res.send('error'+ err)
-            })
-
+users.post('/login', async (req,res)=>{
+    const user = await User.findOne({ where : {email_id : req.body.email_id }});
+    if(user){
+       const password_valid = await bcrypt.compare(req.body.password,user.password);
+       if(password_valid){
+           token = jwt.sign({ "id" : user.id,"email" : user.email_id,"user_name":user.user_name },process.env.SECRET_KEY);
+           res.status(200).json({ token : token });
+       } else {
+         res.status(400).json({ error : "Password Incorrect" });
+       }
+     
+     }else{
+       res.status(404).json({ error : "User does not exist" });
+     }
+     
+     });
            
-})
+
 module.exports = users

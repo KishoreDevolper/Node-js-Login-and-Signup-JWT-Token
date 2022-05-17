@@ -11,6 +11,16 @@ app.use(
 )
 var Users = require("./routes/Users")
 app.use("/Users", Users)
+
+
+const db = require("./models/User");
+
+
+db.sequelize.sync({force: false}).then(() => {
+  console.log('Drop and Resync Db');
+
+});
+
 app.listen(port,function(){
     console.log("server runnning on port" + port)
 })
